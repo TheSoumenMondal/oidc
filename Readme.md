@@ -3,6 +3,10 @@
 Lightweight OAuth2 + OpenID Connect provider built with Express and TypeScript.
 It supports user registration/login, token exchange, user info, OIDC discovery, and JWKS.
 
+<p center>
+<img src="./assets/img.png">
+</p>
+
 ## Quick Setup
 
 1. Install dependencies:
