@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auth Screen - Dark Mode</title>
+  <style>
+    :root {
+      --bg-color: #0f0f0f;
+      --form-bg: #1c1c1c;
+      --input-bg: #2a2a2a;
+      --input-border: #3a3a3a;
+      --text-main: #ffffff;
+      --text-muted: #9e9e9e;
+      --accent-color: #2b9d6c;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-serif: 'Playfair Display', Georgia, serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      font-family: var(--font-sans);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .auth-container {
+      background-color: var(--form-bg);
+      padding: 40px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: none;
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .auth-header h1 {
+      font-family: var(--font-serif);
+      color: var(--text-main);
+      font-size: 28px;
+      font-weight: 500;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .form-row .form-group {
+      margin-bottom: 0;
+      flex: 1;
+    }
+
+    label {
+      display: block;
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    label span {
+      color: var(--accent-color);
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="url"] {
+      width: 100%;
+      background-color: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-main);
+      padding: 12px 12px 12px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .has-icon input {
+      padding-left: 36px;
+    }
+
+    input:focus {
+      border-color: var(--accent-color);
+    }
+
+    a {
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background-color: var(--accent-color);
+      color: #ffffff;
+      border: none;
+      padding: 14px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-top: 10px;
+    }
+
+    .btn-submit:hover {
+      background-color: #24865b;
+    }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="auth-container">
+    <div class="auth-header">
+      <h1 id="form-title">Create an account</h1>
+    </div>
+
+    <form id="auth-form">
+      <div id="signup-fields">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First name <span>*</span></label>
+            <input type="text" id="firstName">
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last name <span>*</span></label>
+            <input type="text" id="lastName">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="profileImageUrl">Profile Image URL (Optional)</label>
+          <input type="url" id="profileImageUrl">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email <span>*</span></label>
+        <div class="input-wrapper has-icon">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+            <path d="M2 4l10 8 10-8"></path>
+          </svg>
+          <input type="email" id="email" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password <span>*</span></label>
+        <div class="input-wrapper has-icon">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <input type="password" id="password" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submit-btn">Continue</button>
+    </form>
+
+    <div class="auth-footer">
+      <span id="toggle-text">Already have an account?</span>
+      <a href="#" id="toggle-btn">Sign in</a>
+    </div>
+  </div>
+</body>
+
+</html>

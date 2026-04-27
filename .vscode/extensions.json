@@ -1,0 +1,14 @@
+{
+	"recommendations": [
+		"biomejs.biome",
+		"christian-kohler.path-intellisense",
+		"christian-kohler.npm-intellisense",
+		"humao.rest-client",
+		"mikestead.dotenv",
+		"usernamehw.errorlens",
+		"ms-vscode.vscode-typescript-next",
+		"eamodio.gitlens",
+		"ms-azuretools.vscode-docker",
+		"mtxr.sqltools"
+	]
+}
