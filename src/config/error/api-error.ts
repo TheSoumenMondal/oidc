@@ -38,6 +38,18 @@ class ApiError extends Error {
   public static conflict(message: string): ApiError {
     return new ApiError(message, StatusCodes.CONFLICT);
   }
+
+  public static unauthorized(message: string): ApiError {
+    return new ApiError(message, StatusCodes.UNAUTHORIZED);
+  }
+
+  public static badRequest(message: string): ApiError {
+    return new ApiError(message, StatusCodes.BAD_REQUEST);
+  }
+
+  public static forbidden(message: string): ApiError {
+    return new ApiError(message, StatusCodes.FORBIDDEN);
+  }
 }
 
 export { ApiError };

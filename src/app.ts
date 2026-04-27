@@ -1,6 +1,8 @@
 import type { Application } from "express";
 import express from "express";
 import { errorHandler } from "./config/error/error-handler.js";
+import { apiRouter } from "./routes/index.js";
+import { oauthRouter } from "./routes/v1/oauth.routes.js";
 import { healthRoute } from "./utils/health-route.js";
 
 class ExpressApplication {
@@ -47,7 +49,8 @@ class ExpressApplication {
   }
 
   private configureRoutes(): void {
-    // Configure other routes here
+    this.app.use("/", oauthRouter);
+    this.app.use("/api", apiRouter);
   }
 }
 

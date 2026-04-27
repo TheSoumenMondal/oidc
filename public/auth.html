@@ -152,6 +152,22 @@
       color: var(--text-muted);
     }
 
+    .status-text {
+      margin-top: 14px;
+      font-size: 13px;
+      text-align: center;
+      min-height: 18px;
+      color: var(--text-muted);
+    }
+
+    .status-text.success {
+      color: #77d7a9;
+    }
+
+    .status-text.error {
+      color: #ff8e8e;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -209,6 +225,7 @@
       </div>
 
       <button type="submit" class="btn-submit" id="submit-btn">Continue</button>
+      <p id="status-text" class="status-text"></p>
     </form>
 
     <div class="auth-footer">
@@ -216,6 +233,130 @@
       <a href="#" id="toggle-btn">Sign in</a>
     </div>
   </div>
+
+
+  <script>
+    const formTitle = document.getElementById("form-title");
+    const authForm = document.getElementById("auth-form");
+    const signupFields = document.getElementById("signup-fields");
+    const submitBtn = document.getElementById("submit-btn");
+    const toggleText = document.getElementById("toggle-text");
+    const toggleBtn = document.getElementById("toggle-btn");
+    const statusText = document.getElementById("status-text");
+
+    const firstNameInput = document.getElementById("firstName");
+    const lastNameInput = document.getElementById("lastName");
+    const profileImageUrlInput = document.getElementById("profileImageUrl");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+
+    const AUTH_ENDPOINTS = {
+      login: "/api/v1/oauth/login",
+      signup: "/api/v1/oauth/signup",
+    };
+
+    let isSignupMode = true;
+
+    const setStatus = (message, type = "") => {
+      statusText.textContent = message;
+      statusText.classList.remove("success", "error");
+      if (type) {
+        statusText.classList.add(type);
+      }
+    };
+
+    const updateFormMode = () => {
+      if (isSignupMode) {
+        formTitle.textContent = "Create an account";
+        submitBtn.textContent = "Sign up";
+        toggleText.textContent = "Already have an account?";
+        toggleBtn.textContent = "Sign in";
+        signupFields.classList.remove("hidden");
+        firstNameInput.required = true;
+        lastNameInput.required = true;
+      } else {
+        formTitle.textContent = "Welcome back";
+        submitBtn.textContent = "Sign in";
+        toggleText.textContent = "New here?";
+        toggleBtn.textContent = "Create account";
+        signupFields.classList.add("hidden");
+        firstNameInput.required = false;
+        lastNameInput.required = false;
+      }
+      setStatus("");
+    };
+
+    toggleBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      isSignupMode = !isSignupMode;
+      updateFormMode();
+    });
+
+    authForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setStatus("");
+
+      const endpoint = isSignupMode ? AUTH_ENDPOINTS.signup : AUTH_ENDPOINTS.login;
+
+      const payload = isSignupMode
+        ? {
+          firstName: firstNameInput.value.trim(),
+          lastName: lastNameInput.value.trim(),
+          email: emailInput.value.trim(),
+          password: passwordInput.value,
+          profilePicture: profileImageUrlInput.value.trim() || undefined,
+        }
+        : {
+          email: emailInput.value.trim(),
+          password: passwordInput.value,
+        };
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = isSignupMode ? "Signing up..." : "Signing in...";
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          const errorMessage = data?.message || "Request failed. Please try again.";
+          setStatus(errorMessage, "error");
+          return;
+        }
+
+        if (!isSignupMode && data?.token) {
+          localStorage.setItem("oauth_token", data.token);
+        }
+
+        if (isSignupMode) {
+          setStatus("Signup successful. You can sign in now.", "success");
+          isSignupMode = false;
+          updateFormMode();
+          passwordInput.value = "";
+        } else {
+          setStatus("Login successful.", "success");
+        }
+      } catch (_error) {
+        setStatus("Network error. Please check your connection.", "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = isSignupMode ? "Sign up" : "Sign in";
+      }
+    });
+
+    updateFormMode();
+
+
+
+  </script>
+
 </body>
 
 </html>

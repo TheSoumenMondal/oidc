@@ -3,16 +3,32 @@ services:
     image: mongodb/mongodb-atlas-local
     hostname: mongodb
     environment:
-      - MONGODB_INITDB_ROOT_USERNAME=user
-      - MONGODB_INITDB_ROOT_PASSWORD=pass
+      MONGODB_INITDB_ROOT_USERNAME: user
+      MONGODB_INITDB_ROOT_PASSWORD: pass
     ports:
-      - 27017:27017
+      - "27017:27017"
     volumes:
       - ./init:/docker-entrypoint-initdb.d
       - db:/data/db
       - configdb:/data/configdb
       - mongot:/data/mongot
+
+  cache:
+    image: redis:7.4-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --save 20 1
+      --loglevel warning
+      --requirepass yourpassword
+    volumes:
+      - cache:/data
+
 volumes:
   db:
   configdb:
   mongot:
+  cache:
+    driver: local
