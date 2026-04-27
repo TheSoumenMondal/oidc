@@ -21,5 +21,6 @@ oauthRouter.post("/authorize", oauthController.handleAuthorization.bind(oauthCon
 oauthRouter.post("/login", oauthController.handleAuthorization.bind(oauthController));
 oauthRouter.post("/signup", oauthController.handleRegistration.bind(oauthController));
 oauthRouter.post("/token", oauthController.handleTokenExchange.bind(oauthController));
+oauthRouter.get("/userinfo", oauthController.getUserInfo.bind(oauthController));
 
 export { oauthRouter };

@@ -89,6 +89,19 @@ class OAuthController {
     const tokenResponse = await this.oauthService.exchangeToken(exchangeToken);
     res.json(tokenResponse);
   }
+
+  async getUserInfo(req: Request, res: Response) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      throw ApiError.unauthorized("Missing or invalid Authorization header");
+    }
+    const accessToken = authHeader.slice("Bearer ".length).trim();
+    if (!accessToken) {
+      throw ApiError.unauthorized("Missing or invalid Authorization header");
+    }
+    const userInfo = await this.oauthService.getUserInfo(accessToken);
+    res.json(userInfo);
+  }
 }
 
 export { OAuthController };

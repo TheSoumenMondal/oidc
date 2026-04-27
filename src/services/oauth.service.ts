@@ -130,6 +130,19 @@ class OAuthService {
       expires_in: 60 * 60,
     };
   }
+
+  async getUserInfo(accessToken: string) {
+    const userDataFromRedis = await redisClient.get(`oauth:access_token:${accessToken}`);
+    const user = JSON.parse(userDataFromRedis ?? "{}");
+    if (!user.id) {
+      throw ApiError.unauthorized("Invalid access token");
+    }
+    const userData = await this.oauthRepository.getUserById(user.id);
+    if (!userData) {
+      throw ApiError.notFound("User not found");
+    }
+    return userData;
+  }
 }
 
 export { OAuthService };
