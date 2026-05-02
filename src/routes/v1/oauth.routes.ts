@@ -1,10 +1,12 @@
 import express, { type Router } from "express";
 import { OAuthController } from "../../controllers/oauth.controller.js";
+import { ClientRepository } from "../../repository/client.repository.js";
 import { OAuthRepository } from "../../repository/oauth.repository.js";
 import { OAuthService } from "../../services/oauth.service.js";
 
 const oauthRepository = new OAuthRepository();
-const oauthService = new OAuthService(oauthRepository);
+const clientRepository = new ClientRepository();
+const oauthService = new OAuthService(oauthRepository, clientRepository);
 const oauthController = new OAuthController(oauthService);
 
 const oauthRouter: Router = express.Router();

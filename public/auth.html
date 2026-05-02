@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auth Screen - Dark Mode</title>
+  <title>Authorize - OAuth Provider</title>
   <style>
     :root {
       --bg-color: #0f0f0f;
@@ -40,6 +40,25 @@
       width: 100%;
       max-width: 420px;
       box-shadow: none;
+    }
+
+    .app-info {
+      text-align: center;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: rgba(43, 157, 108, 0.08);
+      border: 1px solid rgba(43, 157, 108, 0.2);
+      border-radius: 8px;
+    }
+
+    .app-info p {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .app-info .app-name {
+      color: var(--accent-color);
+      font-weight: 600;
     }
 
     .auth-header {
@@ -177,6 +196,11 @@
 <body>
 
   <div class="auth-container">
+
+    <div id="app-info-section" class="app-info hidden">
+      <p><span class="app-name" id="appNameDisplay"></span> wants to access your account</p>
+    </div>
+
     <div class="auth-header">
       <h1 id="form-title">Create an account</h1>
     </div>
@@ -236,6 +260,9 @@
 
 
   <script>
+    // Read OAuth context injected by the server
+    const oauthContext = window.__OAUTH_CONTEXT__ || null;
+
     const formTitle = document.getElementById("form-title");
     const authForm = document.getElementById("auth-form");
     const signupFields = document.getElementById("signup-fields");
@@ -243,6 +270,8 @@
     const toggleText = document.getElementById("toggle-text");
     const toggleBtn = document.getElementById("toggle-btn");
     const statusText = document.getElementById("status-text");
+    const appInfoSection = document.getElementById("app-info-section");
+    const appNameDisplay = document.getElementById("appNameDisplay");
 
     const firstNameInput = document.getElementById("firstName");
     const lastNameInput = document.getElementById("lastName");
@@ -250,10 +279,11 @@
     const emailInput = document.getElementById("email");
     const passwordInput = document.getElementById("password");
 
-    const AUTH_ENDPOINTS = {
-      login: "/api/v1/oauth/login",
-      signup: "/api/v1/oauth/signup",
-    };
+    // Show the app name if we have OAuth context
+    if (oauthContext && oauthContext.appName) {
+      appNameDisplay.textContent = oauthContext.appName;
+      appInfoSection.classList.remove("hidden");
+    }
 
     let isSignupMode = true;
 
@@ -296,65 +326,95 @@
       event.preventDefault();
       setStatus("");
 
-      const endpoint = isSignupMode ? AUTH_ENDPOINTS.signup : AUTH_ENDPOINTS.login;
-
-      const payload = isSignupMode
-        ? {
+      if (isSignupMode) {
+        // Handle signup
+        const payload = {
           firstName: firstNameInput.value.trim(),
           lastName: lastNameInput.value.trim(),
           email: emailInput.value.trim(),
           password: passwordInput.value,
           profilePicture: profileImageUrlInput.value.trim() || undefined,
-        }
-        : {
-          email: emailInput.value.trim(),
-          password: passwordInput.value,
         };
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = isSignupMode ? "Signing up..." : "Signing in...";
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Signing up...";
 
-      try {
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
+        try {
+          const response = await fetch("/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
 
-        const data = await response.json().catch(() => ({}));
+          const data = await response.json().catch(() => ({}));
 
-        if (!response.ok) {
-          const errorMessage = data?.message || "Request failed. Please try again.";
-          setStatus(errorMessage, "error");
-          return;
-        }
+          if (!response.ok) {
+            setStatus(data?.message || "Signup failed. Please try again.", "error");
+            return;
+          }
 
-        if (!isSignupMode && data?.token) {
-          localStorage.setItem("oauth_token", data.token);
-        }
-
-        if (isSignupMode) {
           setStatus("Signup successful. You can sign in now.", "success");
           isSignupMode = false;
           updateFormMode();
           passwordInput.value = "";
-        } else {
-          setStatus("Login successful.", "success");
+        } catch (_error) {
+          setStatus("Network error. Please check your connection.", "error");
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = isSignupMode ? "Sign up" : "Sign in";
         }
-      } catch (_error) {
-        setStatus("Network error. Please check your connection.", "error");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = isSignupMode ? "Sign up" : "Sign in";
+
+      } else {
+        // Handle login — this is the authorization step
+        const payload = {
+          email: emailInput.value.trim(),
+          password: passwordInput.value,
+        };
+
+        // Attach OAuth context for the authorization code flow
+        if (oauthContext) {
+          payload.client_id = oauthContext.clientId;
+          payload.redirect_uri = oauthContext.redirectUri;
+          payload.state = oauthContext.state;
+          payload.scope = oauthContext.scope;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Signing in...";
+
+        try {
+          const response = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            setStatus(data?.message || "Login failed. Please try again.", "error");
+            return;
+          }
+
+          // If we have a redirect URL (OIDC flow), redirect the user
+          if (data.redirect_url) {
+            setStatus("Login successful. Redirecting...", "success");
+            setTimeout(() => {
+              window.location.href = data.redirect_url;
+            }, 500);
+          } else {
+            setStatus("Login successful.", "success");
+          }
+        } catch (_error) {
+          setStatus("Network error. Please check your connection.", "error");
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = isSignupMode ? "Sign up" : "Sign in";
+        }
       }
     });
 
     updateFormMode();
-
-
-
   </script>
 
 </body>
