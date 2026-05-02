@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oauth Registration Page</title>
+
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --card: #181818;
+      --border: #2a2a2a;
+      --text: #e4e4e4;
+      --muted: #a1a1aa;
+      --primary: #3ecf8e;
+      --primary-hover: #2eb67d;
+      --input-bg: #111111;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: var(--card);
+      padding: 28px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 16px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(62, 207, 142, 0.2);
+    }
+
+    button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      background: var(--primary);
+      color: black;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Register OAuth Client</h1>
+
+    <div class="form-group">
+      <label for="appName">App Name</label>
+      <input type="text" id="appName">
+    </div>
+
+    <div class="form-group">
+      <label for="appUrl">App URL</label>
+      <input type="text" id="appUrl">
+    </div>
+
+    <div class="form-group">
+      <label for="appRedirectUrl">App Redirect URL</label>
+      <input type="text" id="appRedirectUrl">
+    </div>
+
+    <div class="form-group">
+      <label for="clientId">Generated Client ID (Save this!)</label>
+      <input type="text" id="clientId" readonly placeholder="Will be generated">
+    </div>
+
+    <div class="form-group">
+      <label for="clientSecret">Generated Client Secret (Save this!)</label>
+      <input type="text" id="clientSecret" readonly placeholder="Will be generated">
+    </div>
+
+    <button id="registerClientBtn" type="button">Register Client</button>
+  </div>
+
+</body>
+
+<script>
+  document.getElementById("registerClientBtn").addEventListener("click", async () => {
+    const appName = document.querySelector("#appName").value;
+    const appUrl = document.querySelector("#appUrl").value;
+    const redirectUrl = document.querySelector("#appRedirectUrl").value;
+
+    if (!appName || !appUrl || !redirectUrl) {
+      alert("Please fill in all fields (App Name, App URL, Redirect URL).");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/v1/clients", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          appName,
+          appUrl,
+          redirectUrl,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        document.getElementById("clientId").value = data.data.clientId;
+        document.getElementById("clientSecret").value = data.data.clientSecret;
+        alert("Client registered successfully! Please save your Client ID and Secret.");
+      } else {
+        alert("Failed to register client: " + (data.message || "Unknown error"));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred during registration.");
+    }
+  });
+</script>
+
+</html>
